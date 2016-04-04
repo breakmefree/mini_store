@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title></title>
+  <script src='https://ajax.googleapis.com/ajax/libs/angularjs/1.3.5/angular.min.js'></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.5/angular-route.min.js"></script>
+  <link rel="stylesheet" type="text/css" href="style.css">
+    <script type='text/javascript'>
+      var myApp = angular.module('myApp', ['ngRoute']);
+      myApp.config(function ($routeProvider) {
+        $routeProvider
+        .when('/',{
+            templateUrl: 'partials/customers.html'
+        })
+        .when('/partial2',{
+            templateUrl: 'partials/orders.html'
+        })
+        .otherwise({
+          redirectTo: '/'
+        });
+      });
+
+      myApp.factory('customerFactory', function() {
+        
+        var customers = [{name: 'Neha', date: Date()},
+                         {name: 'Kshama', date: Date()},
+                         {name: 'John', date: Date()}];
+        var factory = {};
+
+        factory.getCustomers = function(callback) {
+          callback(customers);
+        }
+
+        factory.createCustomer = function(new_customer) {
+          customers.push(new_customer);
+        }
+
+        factory.removeCustomer = function(customer) {
+          customers.splice(customers.indexOf(customer), 1);
+        }
+
+        return factory;
+        
+      });
+
+      myApp.controller('customersController', function($scope, customerFactory) {
+
+        $scope.customers = [];
+        customerFactory.getCustomers(function(data) {
+          $scope.customers = data;
+        });
+
+        $scope.removeCustomer = function(customer) {
+          customerFactory.removeCustomer(customer, function(){
+              customerFactory.getCustomers(function(data) {
+              $scope.customers = data;
+            });
+          });
+        }
+
+        $scope.createCustomer = function() {
+          $scope.newCustomer.date= Date();
+          customerFactory.createCustomer($scope.newCustomer);
+          $scope.newCustomer={};
+        }
+
+      })
+
+      myApp.controller('ordersController', function($scope, customerFactory) {
+
+        $scope.orders = [];
+        $scope.products=["Nike Shoes", "Black Belt", "Ice Creams", "Candies"];
+        $scope.customers = [];
+        $scope.orderNos=[1, 2 , 3, 4, 5, 6, 7, 8, 9, 10];
+        customerFactory.getCustomers(function(data) {
+          $scope.customers = data;
+        });
+
+        $scope.createOrder = function() {
+          $scope.orders.push({name: $scope.newCustomer, product: $scope.newProduct, quantity: $scope.newOrderNo, date: Date()});
+        }
+      })
+    </script>
+  <style type="text/css" href="style.css"></style>
+</head>
+<body ng-app="myApp">
+  <a href="#/">Customers</a>&nbsp;<a href="#/partial2">Orders</a>
+  <div ng-view="">
+  </div>
+</body>
+</html>
